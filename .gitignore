@@ -17,6 +17,9 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 
+# Claude Code internal files
+.claude/
+
 # Logs
 *.log
 npm-debug.log*

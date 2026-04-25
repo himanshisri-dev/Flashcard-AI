@@ -1,49 +1,36 @@
-import { pipeline, env as hfEnv } from "@xenova/transformers";
+import { env } from "../config/env.js";
 
+// Jina AI embeddings API — free tier, 768-dim, no local model download.
+// Replaces Transformers.js which exceeded Render's 512MB free-tier RAM limit.
 export const EMBEDDING_DIMENSIONS = 768;
 
-const MODEL_NAME = "Xenova/all-mpnet-base-v2";
-
-// Point cache to a persistent path inside the project so Render keeps it
-// across restarts (within the same deploy). Falls back to default on local.
-hfEnv.allowLocalModels = true;
-hfEnv.useBrowserCache = false;
-hfEnv.cacheDir = process.env.MODEL_CACHE_DIR || "./model-cache";
-
-let extractorPromise = null;
-
-async function getExtractor() {
-  if (!extractorPromise) {
-    console.log(`[embed] loading model ${MODEL_NAME} (first run may download ~110MB)...`);
-    extractorPromise = pipeline("feature-extraction", MODEL_NAME, {
-      quantized: true,
-    }).then((ext) => {
-      console.log(`[embed] model ${MODEL_NAME} ready`);
-      return ext;
-    });
-  }
-  return extractorPromise;
-}
-
-export async function embedText(text) {
-  const extractor = await getExtractor();
-  const output = await extractor(text, { pooling: "mean", normalize: true });
-  return Array.from(output.data);
-}
+const JINA_URL = "https://api.jina.ai/v1/embeddings";
+const JINA_MODEL = "jina-embeddings-v2-base-en";
 
 export async function embedTextBatch(texts) {
   if (!texts.length) return [];
-  const extractor = await getExtractor();
-  const output = await extractor(texts, { pooling: "mean", normalize: true });
 
-  const [batchSize, dim] = output.dims;
-  if (dim !== EMBEDDING_DIMENSIONS) {
-    throw new Error(`Embedding dim mismatch: got ${dim}, expected ${EMBEDDING_DIMENSIONS}`);
+  const response = await fetch(JINA_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.jinaApiKey}`,
+    },
+    body: JSON.stringify({ model: JINA_MODEL, input: texts }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Jina embedding failed (${response.status}): ${err}`);
   }
-  const flat = output.data;
-  const result = new Array(batchSize);
-  for (let i = 0; i < batchSize; i++) {
-    result[i] = Array.from(flat.slice(i * dim, (i + 1) * dim));
-  }
-  return result;
+
+  const data = await response.json();
+  return data.data
+    .sort((a, b) => a.index - b.index)
+    .map((item) => item.embedding);
+}
+
+export async function embedText(text) {
+  const results = await embedTextBatch([text]);
+  return results[0];
 }

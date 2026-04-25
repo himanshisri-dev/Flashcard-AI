@@ -6,6 +6,7 @@ const required = [
   "MONGO_URI",
   "JWT_SECRET",
   "GROQ_API_KEY",
+  "JINA_API_KEY",
   "QDRANT_URL",
   "QDRANT_COLLECTION",
 ];
@@ -24,6 +25,7 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: "7d",
   groqApiKey: process.env.GROQ_API_KEY,
+  jinaApiKey: process.env.JINA_API_KEY,
   qdrantUrl: process.env.QDRANT_URL,
   qdrantCollection: process.env.QDRANT_COLLECTION,
   qdrantApiKey: process.env.QDRANT_API_KEY || "",
