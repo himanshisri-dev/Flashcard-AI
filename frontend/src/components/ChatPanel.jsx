@@ -91,7 +91,7 @@ export default function ChatPanel({ pdfId, embeddingStatus }) {
           </div>
           <div>
             <h2 className="text-white font-semibold">Ask your document</h2>
-            <p className="text-xs text-slate-500">Powered by RAG + Gemini</p>
+            <p className="text-xs text-slate-500">Powered by RAG + Groq</p>
           </div>
         </div>
         {messages.length > 0 && (

@@ -1,27 +1,23 @@
 import { pipeline, env as hfEnv } from "@xenova/transformers";
 
-// 768 dims matches both our Qdrant collection config and the mpnet model output.
 export const EMBEDDING_DIMENSIONS = 768;
 
-// all-mpnet-base-v2 is a well-benchmarked sentence-embedding model: 768 dims,
-// strong semantic retrieval quality, runs on CPU in tens of milliseconds per
-// text. Model weights are downloaded once on first use (~110 MB quantized)
-// and cached under node_modules/.cache, so subsequent starts are fully offline.
 const MODEL_NAME = "Xenova/all-mpnet-base-v2";
 
-// Keep the quantized variant enabled (default). It's much smaller/faster and
-// quality loss for retrieval is negligible.
+// Point cache to a persistent path inside the project so Render keeps it
+// across restarts (within the same deploy). Falls back to default on local.
 hfEnv.allowLocalModels = true;
 hfEnv.useBrowserCache = false;
+hfEnv.cacheDir = process.env.MODEL_CACHE_DIR || "./model-cache";
 
 let extractorPromise = null;
 
-// Lazy singleton so we only load the model once per process. The first
-// embedding call triggers download + init (~30s cold, <1s warm).
 async function getExtractor() {
   if (!extractorPromise) {
     console.log(`[embed] loading model ${MODEL_NAME} (first run may download ~110MB)...`);
-    extractorPromise = pipeline("feature-extraction", MODEL_NAME).then((ext) => {
+    extractorPromise = pipeline("feature-extraction", MODEL_NAME, {
+      quantized: true,
+    }).then((ext) => {
       console.log(`[embed] model ${MODEL_NAME} ready`);
       return ext;
     });
@@ -40,13 +36,9 @@ export async function embedTextBatch(texts) {
   const extractor = await getExtractor();
   const output = await extractor(texts, { pooling: "mean", normalize: true });
 
-  // Batch output has shape [batchSize, 768]. Convert the flat Float32Array
-  // back into an array of per-text vectors.
   const [batchSize, dim] = output.dims;
   if (dim !== EMBEDDING_DIMENSIONS) {
-    throw new Error(
-      `Embedding dim mismatch: got ${dim}, expected ${EMBEDDING_DIMENSIONS}`
-    );
+    throw new Error(`Embedding dim mismatch: got ${dim}, expected ${EMBEDDING_DIMENSIONS}`);
   }
   const flat = output.data;
   const result = new Array(batchSize);
