@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//tmp/**)",
-      "Bash(curl -s http://localhost:5000/api/pdfs/69e8cb9acd3963555688120b/flashcards -H 'Authorization: Bearer __TRACKED_VAR__')",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const cards=JSON.parse\\(d\\).flashcards;console.log\\('COUNT:',cards.length\\);console.log\\('---'\\);cards.slice\\(0,3\\).forEach\\(\\(c,i\\)=>{console.log\\(\\(i+1\\)+'. Q:',c.front\\);console.log\\('   A:',c.back.slice\\(0,180\\)\\);console.log\\(\\)}\\)}\\)\")"
-    ]
-  }
-}
