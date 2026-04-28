@@ -15,8 +15,10 @@ import {
   postChatMessage,
   clearChatHistory,
 } from "../controllers/chat.controller.js";
+import { generateQuiz } from "../controllers/quiz.controller.js";
 
 const router = Router();
+
 
 router.use(authenticate);
 
@@ -31,5 +33,7 @@ router.get("/:pdfId/flashcards", asyncHandler(listFlashcardsByPdf));
 router.get("/:id/chat", asyncHandler(getChatHistory));
 router.post("/:id/chat", asyncHandler(postChatMessage));
 router.delete("/:id/chat", asyncHandler(clearChatHistory));
+
+router.get("/:id/quiz", asyncHandler(generateQuiz));
 
 export default router;

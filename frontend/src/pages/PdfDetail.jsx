@@ -6,6 +6,7 @@ import StatusBadge from "../components/StatusBadge.jsx";
 import FlipCard from "../components/FlipCard.jsx";
 import EditCardModal from "../components/EditCardModal.jsx";
 import ChatPanel from "../components/ChatPanel.jsx";
+import QuizPanel from "../components/QuizPanel.jsx";
 
 export default function PdfDetail() {
   const { id } = useParams();
@@ -161,6 +162,10 @@ export default function PdfDetail() {
             </div>
           )}
         </section>
+
+        {pdf.status === "ready" && cards.length >= 2 && (
+          <QuizPanel pdfId={id} cardCount={cards.length} />
+        )}
 
         <ChatPanel pdfId={id} embeddingStatus={pdf.embeddingStatus} />
       </main>
