@@ -24,7 +24,7 @@ function fileFilter(req, file, cb) {
 export const uploadPdf = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
 });
 
 export { UPLOAD_DIR };

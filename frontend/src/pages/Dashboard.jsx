@@ -120,7 +120,16 @@ export default function Dashboard() {
                   type="file"
                   accept="application/pdf"
                   className="hidden"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null;
+                    if (f && f.size > 25 * 1024 * 1024) {
+                      setError("File too large. Maximum allowed size is 25MB.");
+                      e.target.value = "";
+                      return;
+                    }
+                    setError("");
+                    setFile(f);
+                  }}
                 />
               </label>
 

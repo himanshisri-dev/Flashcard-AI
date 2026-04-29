@@ -1,8 +1,16 @@
+import multer from "multer";
 import { ApiError } from "../utils/apiError.js";
 import { env } from "../config/env.js";
 
 // eslint-disable-next-line no-unused-vars
 export function errorHandler(err, req, res, next) {
+  if (err instanceof multer.MulterError) {
+    const message = err.code === "LIMIT_FILE_SIZE"
+      ? "File too large. Maximum allowed size is 10MB."
+      : err.message;
+    return res.status(400).json({ error: message });
+  }
+
   if (err instanceof ApiError) {
     return res.status(err.status).json({
       error: err.message,
